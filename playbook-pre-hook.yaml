@@ -1,0 +1,29 @@
+- name: Reconfigure all disks to persistent
+  hosts: localhost
+  gather_facts: false
+  vars:
+    vcenter_hostname: <vsphere URL>
+    vcenter_username: administrator@vsphere.local
+    vcenter_password: <password>
+    vcenter_dc: <datacentre name>
+    dest_folder: <destination folder for migrated VMs>
+  tasks:
+    - name: Load Plan
+      include_vars:
+        file: plan.yml
+        name: plan
+    
+    - name: Load Workload
+      include_vars:
+        file: workload.yml
+        name: workload
+
+    - name: Move VM to new folder after migration
+      community.vmware.vmware_guest_move:
+        hostname: "{{ vcenter_hostname }}"
+        username: "{{ vcenter_username }}"
+        password: "{{ vcenter_password }}"
+        datacenter: "{{ vcenter_dc }}"
+        name: "{{ plan.vms[0].ref.name }}"
+        validate_certs: false
+        dest_folder: "/{{ vcenter_dc }}/vm/{{ dest_folder }}"
